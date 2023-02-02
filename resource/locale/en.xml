@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<stringset>
+	<string src="Error Reading Directory" id="msg_files_read_error"/>
+	<string src="This Directory is Empty" id="msg_files_empty_dir"/>
+
+	<string src="Parameter Enabled" id="msg_settings_param_enabled"/>
+
+	<string src="Launch" id="msg_launch_title"/>
+	<string src="Options" id="msg_options"/>
+	<string src="Arguments Enabled" id="msg_launchparam_enabled"/>
+
+	<string src="Budget" id="msg_settings_budget"/>
+	<string src="Big" id="msg_budget_0"/>
+	<string src="Game" id="msg_budget_1"/>
+	<string src="System" id="msg_budget_2"/>
+	<string src="Shell" id="msg_budget_3"/>
+	<string src="Small" id="msg_budget_4"/>
+	<string src="Mini" id="msg_budget_5"/>
+
+	<string src="Livearea Type" id="msg_settings_la_type"/>
+	<string src="B" id="msg_la_type_0"/>
+	<string src="C" id="msg_la_type_1"/>
+
+	<string src="Memory Size" id="msg_settings_memsize"/>
+
+	<string src="Title ID" id="msg_settings_titleid"/>
+	<string src="Invalid TitleID" id="msg_settings_invalid_titleid"/>
+
+	<string src="Physical Contiguous Memory Size" id="msg_settings_phymemsize"/>
+
+	<string src="Param" id="msg_settings_args"/>
+
+	<string src="Exit To" id="msg_settings_exit_to"/>
+
+	<string src="Port" id="msg_settings_port"/>
+
+	<string src="Use Large CDRAM" id="msg_settings_use_cdlg"/>
+
+	<string src="Background App" id="msg_settings_bg"/>
+
+	<string src="Nonsuspendable" id="msg_settings_nonsuspendable"/>
+
+	<string src="Livearea Off" id="msg_settings_la_off"/>
+
+	<string src="Open" id="msg_settings_open"/>
+	<string src="Launched" id="msg_settings_open_success"/>
+
+    <!-- Taken from EMPV-A -->
+    <string src="ux0:/" id="msg_settings_device_0" />
+    <string src="ur0:/" id="msg_settings_device_1" />
+    <string src="uma0:/" id="msg_settings_device_2" />
+    <string src="vs0:/" id="msg_settings_device_3" />
+    <string src="xmc0:/" id="msg_settings_device_4" />
+    <string src="imc0:/" id="msg_settings_device_5" />
+    <string src="grw0:/" id="msg_settings_device_6" />
+    <string src="Device not found." id="msg_settings_device_not_found" />
+    <string src="Device" id="msg_settings_device" />
+</stringset>

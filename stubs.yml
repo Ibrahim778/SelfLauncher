@@ -1,0 +1,14 @@
+modules:
+  LoaderCompanionKernel:
+    nid: 0x3bc433e5
+    libraries:
+      LoaderCompanionKernel:
+        nid: 0x77de860f
+        kernel: false
+        version: 0x1
+        functions:
+          launchAppFromFileExport: 0x3a73ffef
+          StopUsbExp: 0x5269b95a
+          StartSd2Vita: 0x976ca79b
+          StartUsbOffCard: 0x6e51ea2
+#stubs for loadercompanionkernel

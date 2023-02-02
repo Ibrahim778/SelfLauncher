@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application_settings version="1.0" bg_color="1.0, 1,0, 1.0, 255.0">
+  <setting_list id="self_launcher_launch" title="msg_settings">
+    <toggle_switch id="toggle_launchargs_enabled" title="msg_launchparam_enabled" key="launchargs_enabled" default_value="0"/>
+    
+    <setting_list id="launch_setting" title="msg_options">
+      <toggle_switch id="list_use_cdlg" title="msg_settings_use_cdlg" key="use_cdlg" default_value="0"/>
+      <toggle_switch id="list_bg" title="msg_settings_bg" key="bg" default_value="0"/>
+      <toggle_switch id="list_nonsuspendable" title="msg_settings_nonsuspendable" key="nonsuspendable" default_value="0"/>
+      <toggle_switch id="list_la_off" title="msg_settings_la_off" key="la_off" default_value="0"/>
+    
+      <setting_list id="setting_list_budget" title="msg_settings_budget" style="edit">
+        <toggle_switch id="toggle_budget" title="msg_settings_param_enabled" key="enable_budget" default_value="0"/>
+
+        <list id="list_budget" title="msg_settings_budget" key="budget" default_value="big">
+          <list_item id="list_budget_00" title="msg_budget_0" value="big" />
+          <list_item id="list_budget_01" title="msg_budget_1" value="game" />
+          <list_item id="list_budget_02" title="msg_budget_2" value="sys" />
+          <list_item id="list_budget_03" title="msg_budget_3" value="shell" />
+          <list_item id="list_budget_04" title="msg_budget_4" value="small" />
+          <list_item id="list_budget_05" title="msg_budget_5" value="mini" />
+        </list>
+      </setting_list>
+    
+      <setting_list id="setting_list_la_type" title="msg_settings_la_type" style="edit">
+        <toggle_switch id="toggle_la_type" title="msg_settings_param_enabled" key="enable_la_type" default_value="0"/>
+
+        <list id="list_la_type" title="msg_settings_la_type" key="la_type" default_value="0">
+          <list_item id="list_la_type_00" title="msg_la_type_0" value="0" />
+          <list_item id="list_la_type_01" title="msg_la_type_1" value="1" />
+        </list>
+      </setting_list>
+    
+      <setting_list id="setting_list_memsize" title="msg_settings_memsize" style="edit">
+        <toggle_switch id="toggle_memsize" title="msg_settings_param_enabled" key="enable_memsize" default_value="0"/>
+    
+        <text_field id="text_field_memsize" title="msg_settings_memsize" max_length="10" min_length="1" keyboard_type="numeral" key="memsize" default_value="0"/>
+      </setting_list>
+
+      <setting_list id="setting_list_titleid" title="msg_settings_titleid" style="edit">
+        <toggle_switch id="toggle_titleid" title="msg_settings_param_enabled" key="enable_titleid" default_value="0"/>
+      
+        <text_field id="text_field_titleid" title="msg_settings_titleid" error_dialog_message="msg_settings_invalid_titleid" max_length="9" min_length="8" keyboard_type="alphabet" key="titleid" default_value="ABCD12345"/>
+      </setting_list>
+
+      <setting_list id="setting_list_phymemsize" title="msg_settings_phymemsize" style="edit">
+        <toggle_switch id="toggle_phymemsize" title="msg_settings_param_enabled" key="enable_phymemsize" default_value="0"/>
+
+        <text_field id="text_field_phymemsize" title="msg_settings_phymemsize" max_length="10" min_length="0" keyboard_type="numeral" key="phymemsize" default_value="0"/>
+      </setting_list>
+
+      <setting_list id="setting_list_param" title="msg_settings_args" style="edit">
+        <toggle_switch id="toggle_args" title="msg_settings_param_enabled" key="enable_args" default_value="0"/>
+      
+        <text_field id="text_field_args" title="msg_settings_args" max_length="50" min_length="0" keyboard_type="alphabet" key="args" default_value="1234"/>
+      </setting_list>
+    
+      <setting_list id="setting_list_exit_to" title="msg_settings_exit_to" style="edit">
+        <toggle_switch id="toggle_exit_to" title="msg_settings_param_enabled" key="enable_exit_to" default_value="0"/>
+
+        <text_field id="text_field_exit_to" title="msg_settings_exit_to" max_length="9" min_length="0" keyboard_type="alphabet" key="exit_to" default_value="ABCD12345"/>
+      </setting_list>
+
+      <setting_list id="setting_list_port" title="msg_settings_port" style="edit">
+        <toggle_switch id="toggle_port" title="msg_settings_param_enabled" key="enable_port" default_value="0"/>
+
+        <text_field id="text_field_port" title="msg_settings_port" max_length="50" min_length="0" keyboard_type="numeral" key="port" default_value="1"/>
+      </setting_list>
+
+    </setting_list>
+
+    <button id="button_open" title="msg_settings_open" success_dialog_message="msg_settings_open_success"/>
+    <list id="list_device" title="msg_settings_device" error_dialog_message="msg_settings_device_not_found" key="device" default_value="0">
+        <list_item id="list_device_00" title="msg_settings_device_0" value="0" />
+        <list_item id="list_device_01" title="msg_settings_device_1" value="1" />
+        <list_item id="list_device_02" title="msg_settings_device_2" value="2" />
+        <list_item id="list_device_03" title="msg_settings_device_3" value="3" />
+        <list_item id="list_device_04" title="msg_settings_device_4" value="4" />
+        <list_item id="list_device_05" title="msg_settings_device_5" value="5" />
+        <list_item id="list_device_06" title="msg_settings_device_6" value="6" />
+	</list>
+  </setting_list>
+</application_settings>
