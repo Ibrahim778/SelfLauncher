@@ -34,7 +34,7 @@
 
 	<string src="Port" id="msg_settings_port"/>
 
-	<string src="Use Large CDRAM" id="msg_settings_use_cdlg"/>
+	<string src="Enable Common Dialog Memory" id="msg_settings_use_cdlg"/>
 
 	<string src="Background App" id="msg_settings_bg"/>
 

@@ -58,6 +58,8 @@ SceVoid FileBrowser::PathUp()
 
 	//Copy all characters before it
 	char *newPath = new char[slashLocation];
+    print("0x%X 0x%X %d\n", newPath, path.c_str(), slashLocation);
+    sce_paf_memset(newPath, 0, slashLocation);
 	sce_paf_strncpy(newPath, path.c_str(), slashLocation);
 	newPath[slashLocation] = 0;
 	path = newPath;
@@ -69,7 +71,7 @@ SceVoid FileBrowser::PathUp()
 SceVoid FileBrowser::DirectoryCallback(SceInt32 id, paf::ui::Widget *self, SceInt32 unk, ScePVoid pUserData)
 {
     FileBrowser *workBrowser = (FileBrowser *)pUserData;
-    Dir::Entry *entry = &workBrowser->entries[self->elem.hash];
+    DirEnt *entry = &workBrowser->entries[self->elem.hash];
     
     workBrowser->AppendPath(entry->name.c_str());
     workBrowser->AppendPath("/");
@@ -79,7 +81,7 @@ SceVoid FileBrowser::DirectoryCallback(SceInt32 id, paf::ui::Widget *self, SceIn
 SceVoid FileBrowser::FileCallback(SceInt32 id, paf::ui::Widget *self, SceInt32 unk, ScePVoid pUserData)
 {
     FileBrowser *workBrowser = (FileBrowser *)pUserData;
-    Dir::Entry *entry = &workBrowser->entries[self->elem.hash];
+    DirEnt *entry = &workBrowser->entries[self->elem.hash];
 
     g_settingsLaunch = true;
     workBrowser->AppendPath(entry->name.c_str());
@@ -99,12 +101,13 @@ SceVoid FileBrowser::BackCallback(SceInt32 id, paf::ui::Widget *self, SceInt32 u
     workBrowser->Display();
 }
 
-const char *FileBrowser::GetPath()
+string FileBrowser::GetPath()
 {
-    string device;
-    ccc::UTF16toUTF8(Utils::GetStringPFromIDWithNum("msg_settings_device_", Settings::GetInstance()->device), &device);
+    string out;
     
-    return (device + path).c_str();
+    common::Utf16ToUtf8(Utils::GetStringPFromIDWithNum("msg_settings_device_", Settings::GetInstance()->device), &out);
+    out += path;
+    return out;
 }
 
 ui::ListItem *FileBrowser::ListViewCB::Create(FileBrowser::ListViewCB::Param *param)
@@ -120,11 +123,11 @@ ui::ListItem *FileBrowser::ListViewCB::Create(FileBrowser::ListViewCB::Param *pa
     callback->pUserData = workPage;
     
     ui::Widget *targetRoot = param->parent;
-    Dir::Entry &workEntry = workPage->entries[param->cellIndex];
+    DirEnt &workEntry = workPage->entries[param->cellIndex];
 
     wstring titleLabel;
     
-    if(workEntry.type == Dir::Entry::Type::Type_Dir)
+    if(workEntry.type == DirEnt::Type::Type_Dir)
     {
         icon = &g_dirIcon;
         callback->eventHandler = DirectoryCallback;
@@ -160,7 +163,7 @@ ui::ListItem *FileBrowser::ListViewCB::Create(FileBrowser::ListViewCB::Param *pa
 
     button->elem.hash = param->cellIndex;
     
-    ccc::UTF8toUTF16(&workEntry.name, &titleLabel);
+    common::Utf8ToUtf16(workEntry.name, &titleLabel);
     button->SetLabel(&titleLabel);
 
     button->SetSurfaceBase(icon);
@@ -171,12 +174,12 @@ ui::ListItem *FileBrowser::ListViewCB::Create(FileBrowser::ListViewCB::Param *pa
 
 SceInt32 FileBrowser::SortFiles(const ScePVoid p1, const ScePVoid p2)
 {
-	Dir::Entry *entryA = (Dir::Entry *)p1;
-	Dir::Entry *entryB = (Dir::Entry *)p2;
+	DirEnt *entryA = (DirEnt *)p1;
+	DirEnt *entryB = (DirEnt *)p2;
 
-	if (entryA->type == Dir::Entry::Type_Dir && entryB->type != Dir::Entry::Type_Dir)
+	if (entryA->type == DirEnt::Type_Dir && entryB->type != DirEnt::Type_Dir)
 		return -1; //Dont swap
-	else if ((entryA->type != Dir::Entry::Type_Dir) && (entryB->type == Dir::Entry::Type_Dir))
+	else if ((entryA->type != DirEnt::Type_Dir) && (entryB->type == DirEnt::Type_Dir))
 		return 1; //Swap
 	else 
 		return sce_paf_strcasecmp(entryA->name.c_str(), entryB->name.c_str());
@@ -189,18 +192,18 @@ SceVoid FileBrowser::Display()
     entries.clear();
 
     string device;
-    ccc::UTF16toUTF8(Utils::GetStringPFromIDWithNum("msg_settings_device_", Settings::GetInstance()->device), &device);
+    common::Utf16ToUtf8(Utils::GetStringPFromIDWithNum("msg_settings_device_", Settings::GetInstance()->device), &device);
     
     string fullPath = device + path;
     print("%s\n", fullPath.c_str());
     wstring labelStr;
-    ccc::UTF8toUTF16(&fullPath, &labelStr);
+    common::Utf8ToUtf16(fullPath, &labelStr);
     pathText->SetLabel(&labelStr);
 
     paf::Dir dir;
     if(dir.Open(fullPath.c_str()) == SCE_OK)
     {
-        Dir::Entry entry;
+        DirEnt entry;
         
         while(dir.Read(&entry) >= 0)
             entries.push_back(entry);
@@ -208,7 +211,7 @@ SceVoid FileBrowser::Display()
         dir.Close();
 
         // I am very surprised this works
-        sce_paf_qsort(entries.data(), entries.size(), sizeof(Dir::Entry), (int(*)(const void *, const void *))SortFiles);
+        sce_paf_qsort(entries.data(), entries.size(), sizeof(DirEnt), (int(*)(const void *, const void *))SortFiles);
         
         entryListView->AddItem(0, 0, entries.size());
     } 

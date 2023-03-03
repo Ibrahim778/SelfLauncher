@@ -4,6 +4,7 @@
 #include <psp2kern/kernel/threadmgr.h>
 #include <psp2kern/kernel/sysmem.h>
 #include <psp2kern/kernel/cpu.h>
+#include <psp2kern/sblaimgr.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -58,7 +59,7 @@ int SLKernelLaunchSelfWithArgs(uintptr_t path, uintptr_t cmd, uint32_t cmdlen)
     ENTER_SYSCALL(state);
 
     largl = (cmdlen < 0x100) ? cmdlen : 0x100;
-
+    
     ksceKernelStrncpyUserToKernel(lpath, path, 0x400);
     if (cmd)
         ksceKernelMemcpyUserToKernel(larg, cmd, largl);
@@ -77,6 +78,12 @@ int SLKernelLaunchSelfWithArgs(uintptr_t path, uintptr_t cmd, uint32_t cmdlen)
 void _start() __attribute__((weak, alias("module_start")));
 int module_start(SceSize args, void *argp)
 {
+    if(ksceSblAimgrIsTool())
+    {
+        ksceDebugPrintf("DEVKIT Skipping SceSysmem patches!\n");
+        return SCE_KERNEL_START_SUCCESS;
+    }
+
     // patch thread watchdog and allowSelfArgs QA
     uintptr_t addr;
     int sysmem_id = ksceKernelSearchModuleByName("SceSysmem");

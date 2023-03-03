@@ -70,15 +70,15 @@ public:
 private:
     static sce::AppSettings *appSettings;
 
-    static SceVoid CBListChange(const char *elementId);
+    static SceVoid CBListChange(const char *elementId, SceInt32 type);
 
-    static SceVoid CBListForwardChange(const char *elementId);
+    static SceVoid CBListForwardChange(const char *elementId, SceInt32 type);
 
-    static SceVoid CBListBackChange(const char *elementId);
+    static SceVoid CBListBackChange(const char *elementId, SceInt32 type);
 
     static SceInt32 CBIsVisible(const char *elementId, SceBool *pIsVisible);
 
-    static SceInt32 CBElemInit(const char *elementId);
+    static SceInt32 CBElemInit(const char *elementId, sce::AppSettings::Element *element);
 
     static SceInt32 CBElemAdd(const char *elementId, paf::ui::Widget *widget);
 
@@ -86,7 +86,7 @@ private:
 
     static SceInt32 CBValueChange2(const char *elementId, const char *newValue);
 
-    static SceVoid CBTerm();
+    static SceVoid CBTerm(SceInt32 result);
 
     static wchar_t *CBGetString(const char *elementId);
 

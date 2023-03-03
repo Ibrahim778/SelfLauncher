@@ -33,6 +33,7 @@ target_link_libraries(${PROJECT_NAME}
   SceDebugForDriver_stub
   taihenModuleUtils_stub
   SceSysmemForDriver_stub 
+  SceSblAIMgrForDriver_stub 
 )
 vita_create_self(${PROJECT_NAME}.skprx ${PROJECT_NAME} CONFIG ${PROJECT_NAME}.yml UNSAFE)
 vita_create_stubs(stubs ${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}.yml KERNEL)

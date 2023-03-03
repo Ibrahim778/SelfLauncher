@@ -51,11 +51,11 @@ public:
     //Back up one level in the path
     SceVoid PathUp();
     //Get path
-    const char *GetPath();
+    paf::string GetPath();
 
 private:
     paf::string path;
-    paf::vector<paf::Dir::Entry> entries;
+    paf::vector<paf::DirEnt> entries;
 
     paf::ui::Text *pathText;
     paf::ui::ListView *entryListView;

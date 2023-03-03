@@ -35,7 +35,7 @@ Settings::Settings()
 	sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_BXCE);
 	sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_INI_FILE_PROCESSOR);
 	sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_COMMON_GUI_DIALOG);
-
+    print("Loaded sysmodules\n");
 	pInit.pluginName = "app_settings_plugin";
 	pInit.resourcePath = "vs0:vsh/common/app_settings_plugin.rco";
 	pInit.scopeName = "__main__";
@@ -48,8 +48,8 @@ Settings::Settings()
 	pInit.pluginPath = "vs0:vsh/common/app_settings.suprx";
 	pInit.unk_58 = 0x96;
 
-	Framework::GetInstance()->LoadPlugin(&pInit);
-
+	Plugin::LoadSync(pInit);
+    print("Loaded plugin.\n");
     sInit.xmlFile = g_appPlugin->resource->GetFile(Utils::GetHashById("file_sl_settings"), &fileSize, &mimeType);
 	
     sInit.allocCB = sce_paf_malloc;
@@ -59,14 +59,12 @@ Settings::Settings()
 	sInit.safeMemorySize = 0x400;
 
 	AppSettings::GetInstance(&sInit, &appSettings);
-
+    print("Setup appSettings, instance: %p\n", appSettings);
 	sce_paf_memset(titleID, 0, sizeof(titleID));
 
 	ret = -1;
 	appSettings->GetInt("settings_version", &ret, 0);
-#ifdef _DEBUG
-    ret = -1; //Force reset settings on debug builds
-#endif // _DEBUG	
+    
     if (ret != d_settingsVersion) //Need to setup default values
 	{
 		ret = appSettings->Initialize();
@@ -133,7 +131,7 @@ Settings::Settings()
     appSettings->GetInt("device", &device, d_device);
 
 	appSettings->GetInt("launchargs_enabled", &launchArgs_enabled, d_launchArgs_enabled);
-
+    print("Loaded settings\n");
 	currentSettingsInstance = this;
 }
 
@@ -157,35 +155,36 @@ SceVoid Settings::Open()
 {
 	AppSettings::InterfaceCallbacks ifCb;
 
-	ifCb.listChangeCb = CBListChange;
-	ifCb.listForwardChangeCb = CBListForwardChange;
-	ifCb.listBackChangeCb = CBListBackChange;
-	ifCb.isVisibleCb = CBIsVisible;
-	ifCb.elemInitCb = CBElemInit;
-	ifCb.elemAddCb = CBElemAdd;
-	ifCb.valueChangeCb = CBValueChange;
-	ifCb.valueChangeCb2 = CBValueChange2;
-	ifCb.termCb = CBTerm;
-	ifCb.getStringCb = CBGetString;
-	ifCb.getTexCb = CBGetTex;
+	ifCb.onStartPageTransitionCb = CBListChange;
+	ifCb.onPageActivateCb = CBListForwardChange;
+	ifCb.onPageDeactivateCb = CBListBackChange;
+	ifCb.onCheckVisible = CBIsVisible;
+	ifCb.onPostCreateCb = CBElemAdd;
+	ifCb.onPreCreateCb = CBElemInit;
+	ifCb.onPressCb = CBValueChange;
+	ifCb.onPressCb2 = CBValueChange2;
+	ifCb.onTermCb = CBTerm;
+	ifCb.onGetStringCb = CBGetString;
+	ifCb.onGetSurfaceCb = CBGetTex;
 
 	Plugin *appSetPlug = paf::Plugin::Find("app_settings_plugin");
 	AppSettings::Interface *appSetIf = (sce::AppSettings::Interface *)appSetPlug->GetInterface(1);
 
 	appSetIf->Show(&ifCb);
+    paf::ui::Widget::SetControlFlags(generic::Page::GetCurrentPage()->root, 0);
 }
 
-SceVoid Settings::CBListChange(const char *elementId)
+SceVoid Settings::CBListChange(const char *elementId, SceInt32 type)
 {
 
 }
 
-SceVoid Settings::CBListForwardChange(const char *elementId)
+SceVoid Settings::CBListForwardChange(const char *elementId, SceInt32 type)
 {
 
 }
 
-SceVoid Settings::CBListBackChange(const char *elementId)
+SceVoid Settings::CBListBackChange(const char *elementId, SceInt32 type)
 {
 
 }
@@ -207,7 +206,7 @@ SceInt32 Settings::CBIsVisible(const char *elementId, SceBool *pIsVisible)
 	return SCE_OK;
 }
 
-SceInt32 Settings::CBElemInit(const char *elementId)
+SceInt32 Settings::CBElemInit(const char *elementId, sce::AppSettings::Element *elem)
 {
 	return SCE_OK;
 }
@@ -334,7 +333,8 @@ SceInt32 Settings::CBValueChange(const char *elementId, const char *newValue)
 		break;
     
     case list_device:
-		text8 = ccc::UTF16toUTF8WithAlloc(Utils::GetStringPFromIDWithNum("msg_settings_device_", value));
+        label16 = wstring(Utils::GetStringPFromIDWithNum("msg_settings_device_", value));
+		common::Utf16ToUtf8(label16, text8);
 		if (LocalFile::Exists(text8->c_str())) {
 			GetInstance()->device = value;
             FileBrowser *page = (FileBrowser *)generic::Page::GetCurrentPage();
@@ -357,13 +357,15 @@ SceInt32 Settings::CBValueChange2(const char *elementId, const char *newValue)
 	return SCE_OK;
 }
 
-SceVoid Settings::CBTerm()
+SceVoid Settings::CBTerm(SceInt32 res)
 {
     if(g_settingsLaunch)
     {
         FileBrowser *page = (FileBrowser *)generic::Page::GetCurrentPage();
         page->PathUp();
     }
+
+    paf::ui::Widget::SetControlFlags(generic::Page::GetCurrentPage()->root, 1);
 }
 
 wchar_t *Settings::CBGetString(const char *elementId)

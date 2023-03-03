@@ -84,7 +84,8 @@ SceVoid Launch()
 	if (settingInstance->launchArgs_enabled != 1)
 	{
 		print("Args not enabled!\n");
-        LaunchSelfFromFile(workBrowser->GetPath());
+        print("%s\n", workBrowser->GetPath().c_str());
+        LaunchSelfFromFile(workBrowser->GetPath().c_str());
 	}
 	else
 	{
@@ -195,7 +196,8 @@ SceVoid Launch()
 			if (args[i] == '~') args[i] = 0;
         }
 		
-        LaunchSelfFromFile(workBrowser->GetPath(), args, argumentLength);
+        print("%s\n", workBrowser->GetPath().c_str());
+        LaunchSelfFromFile(workBrowser->GetPath().c_str(), args, argumentLength);
 	}
 
     sceKernelStartThread(
@@ -280,7 +282,7 @@ int main()
 
     Framework *fw = new Framework(fwParam);
 
-    fw->LoadCommonResource();
+    fw->LoadCommonResourceSync();
 
     SceAppUtilInitParam init;
     SceAppUtilBootParam boot;
@@ -301,9 +303,9 @@ int main()
 #endif
     piParam.pluginStartCB = onPluginReady;
 
-    fw->LoadPluginAsync(&piParam);
+    fw->LoadPluginAsync(piParam);
 
-    fw->EnterRenderingLoop();
+    fw->Run();
 
     // SceUInt64 buff = 0;
     // SceUID id = _vshKernelSearchModuleByName("LoaderCompanionKernel", &buff);

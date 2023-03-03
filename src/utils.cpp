@@ -31,7 +31,7 @@ SceVoid Utils::GetStringFromID(const char *id, paf::string *out)
     e.hash = Utils::GetHashById(id);
     
     wchar_t *wstr = g_appPlugin->GetWString(&e);
-    ccc::UTF16toUTF8((const wchar_t *)wstr, out);
+    common::Utf16ToUtf8((const wchar_t *)wstr, out);
 }
 
 SceVoid Utils::GetfStringFromID(const char *id, paf::string *out)
@@ -106,7 +106,7 @@ SceVoid Utils::GetfStringFromID(const char *id, paf::string *out)
 SceInt32 Utils::SetWidgetLabel(paf::ui::Widget *widget, const char *text)
 {
     paf::wstring wstr;
-    ccc::UTF8toUTF16(text, &wstr);    
+    common::Utf8ToUtf16(text, &wstr);    
     return widget->SetLabel(&wstr);
 }
 
@@ -114,7 +114,7 @@ SceInt32 Utils::SetWidgetLabel(paf::ui::Widget *widget, paf::string *text)
 {
     paf::wstring wstr;
 
-    ccc::UTF8toUTF16(text, &wstr);
+    common::Utf8ToUtf16(text->c_str(), &wstr);
 
     return widget->SetLabel(&wstr);
 }
@@ -129,8 +129,11 @@ wchar_t *Utils::GetStringPFromID(const char *id)
 
 wchar_t *Utils::GetStringPFromIDWithNum(const char *id, int num)
 {
+    string       str;
     rco::Element e;
-    e.hash = Utils::GetHashById(ccc::Sprintf("%s%d", id, num).c_str());
+    common::string_util::setf(str, "%s%d", id, num);
+
+    e.hash = Utils::GetHashById(str.c_str());
 
     return g_appPlugin->GetWString(&e);
 }
