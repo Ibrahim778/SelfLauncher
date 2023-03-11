@@ -13,41 +13,15 @@
 #define WIDE(x) WIDE2(x)
 
 extern "C" {
-    extern const char			sceUserMainThreadName[] = "SL_MAIN";
-    extern const int			sceUserMainThreadPriority = SCE_KERNEL_DEFAULT_PRIORITY_USER;
-    extern const unsigned int	sceUserMainThreadStackSize = SCE_KERNEL_THREAD_STACK_SIZE_DEFAULT_USER_MAIN;
-
-    void __cxa_set_dso_handle_main(void *dso)
-    {
-
-    }
-
-    int _sceLdTlsRegisterModuleInfo()
-    {
-        return 0;
-    }
-
-    int __aeabi_unwind_cpp_pr0()
-    {
-        return 9;
-    }
-
-    int __aeabi_unwind_cpp_pr1()
-    {
-        return 9;
-    }
-
-    int __at_quick_exit()
-    {
-        return 0;
-    }
+    const char			sceUserMainThreadName[] = "SL_MAIN";
+    const int			sceUserMainThreadPriority = SCE_KERNEL_DEFAULT_PRIORITY_USER;
+    const unsigned int	sceUserMainThreadStackSize = SCE_KERNEL_THREAD_STACK_SIZE_DEFAULT_USER_MAIN;
 
     SceUID _vshKernelSearchModuleByName(const char *name, SceUInt64 *unk);
     //From LoaderCompanionKernel
     int launchAppFromFileExport(const char * path, const char * cmd, uint32_t cmdlen);
     //From SLKernel
     int SLKernelLaunchSelfWithArgs(const char * path, const char * cmd, uint32_t cmdlen);
-    SCE_USER_MODULE_LIST("app0:module/libScePafPreload.suprx");
 }
 
 using namespace paf;
@@ -269,7 +243,7 @@ int main()
             sceKernelExitProcess(0);
         }
     }
-#ifdef _DEBUG
+#if defined(SCE_PAF_TOOL_PRX) && defined(_DEBUG) && !defined(__INTELLISENSE__)
     SCE_PAF_AUTO_TEST_SET_EXTRA_TTY(sceIoOpen("tty0:", SCE_O_WRONLY, 0));
 #endif
 
@@ -277,7 +251,7 @@ int main()
     fwParam.LoadDefaultParams();
     fwParam.applicationMode = Framework::ApplicationMode::Mode_Application;
     
-    fwParam.defaultSurfacePoolSize = 16 * 1024 * 1024;
+    fwParam.defaultSurfacePoolSize = 6 * 1024 * 1024;
     fwParam.textSurfaceCacheSize = 2621440; //2.5MB
 
     Framework *fw = new Framework(fwParam);
@@ -298,7 +272,7 @@ int main()
     piParam.pluginName = "sl_plugin";
     piParam.resourcePath = "app0:resource/sl_plugin.rco";
     piParam.scopeName = "__main__";
-#ifdef _DEBUG
+#if defined(_DEBUG) && defined(SCE_PAF_TOOL_PRX)
     piParam.pluginFlags = Plugin::InitParam::PluginFlag_UseRcdDebug;
 #endif
     piParam.pluginStartCB = onPluginReady;

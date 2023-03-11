@@ -152,7 +152,7 @@ SceInt32 Utils::PlayEffectReverse(paf::ui::Widget *widget, SceFloat32 param, paf
         widget->animationStatus &= ~0x80;
 }
 
-#define PREVIOUS_PATH_LOCATION "ur0:data/sl_prevPath"
+#define PREVIOUS_PATH_LOCATION "savedata0:prevPath"
 paf::string Utils::GetPreviousPath()
 {
     SceInt32 err = SCE_OK;
