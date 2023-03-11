@@ -7,7 +7,7 @@ include(VitaDevelopmentSuite)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
-add_subdirectory(libScePafPreload)
+add_subdirectory(SLKernel)
 
 if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
     message("Debug build!")
@@ -47,6 +47,7 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
     src/utils.cpp
     src/settings.cpp
+    src/paf_runtime.cpp
     src/pages/page.cpp
     src/pages/file_browser.cpp
 
@@ -124,7 +125,7 @@ if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
 endif()
 
 VDSuiteCreateSfo(${PROJECT_NAME}.sfo param.sfx)
-VDSuiteSignElf(${PROJECT_NAME}.self $<TARGET_FILE:${PROJECT_NAME}> BOOT_PARAM bootparam.yml)
+VDSuiteSignElf(${PROJECT_NAME}.self $<TARGET_FILE:${PROJECT_NAME}> BOOT_PARAM bootparam.yml PROGRAM_AUTHORITY_ID 2200000000000001)
 
 if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
     add_custom_command(
@@ -138,8 +139,7 @@ if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
         ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.sfo sce_sys/param.sfo
         ${CMAKE_BINARY_DIR}/sl_plugin.rco resource/sl_plugin.rco
         ${CMAKE_BINARY_DIR}/sl_plugin.rcd resource/sl_plugin.rcd
-        ${CMAKE_BINARY_DIR}/libScePafPreload/libScePafPreload.suprx module/libScePafPreload.suprx
-        ${CMAKE_SOURCE_DIR}/SLKernel/build/SLKernel.skprx module/SLKernel.skprx  
+        ${CMAKE_BINARY_DIR}/SLKernel/SLKernel.skprx module/SLKernel.skprx  
     )  
 else()
     VDSuitePackage(${PROJECT_NAME}.vpk
@@ -147,7 +147,6 @@ else()
         ${PROJECT_NAME}.self eboot.bin
         ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.sfo sce_sys/param.sfo
         ${CMAKE_BINARY_DIR}/sl_plugin.rco resource/sl_plugin.rco
-        ${CMAKE_BINARY_DIR}/libScePafPreload/libScePafPreload.suprx module/libScePafPreload.suprx
-        ${CMAKE_SOURCE_DIR}/SLKernel/build/SLKernel.skprx module/SLKernel.skprx
+        ${CMAKE_BINARY_DIR}/SLKernel/SLKernel.skprx module/SLKernel.skprx
     )
 endif()
