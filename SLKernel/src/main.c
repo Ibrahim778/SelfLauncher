@@ -1,49 +1,44 @@
 // Literally just https://gist.github.com/SKGleba/588516f185167c8dc3840ba8e7ca1bd9
+// Thanks Gleba :)
 
-#include <psp2kern/kernel/modulemgr.h>
-#include <psp2kern/kernel/threadmgr.h>
-#include <psp2kern/kernel/sysmem.h>
-#include <psp2kern/kernel/cpu.h>
-#include <psp2kern/sblaimgr.h>
-
-#include <stdio.h>
+#include <kernel.h>
 #include <string.h>
+#include <taihen.h>
 
-#define DACR_OFF(stmt)                     \
-    do                                     \
-    {                                      \
-        unsigned prev_dacr;                \
-        __asm__ volatile(                  \
-            "mrc p15, 0, %0, c3, c0, 0 \n" \
-            : "=r"(prev_dacr));            \
-        __asm__ volatile(                  \
-            "mcr p15, 0, %0, c3, c0, 0 \n" \
-            :                              \
-            : "r"(0xFFFF0000));            \
-        stmt;                              \
-        __asm__ volatile(                  \
-            "mcr p15, 0, %0, c3, c0, 0 \n" \
-            :                              \
-            : "r"(prev_dacr));             \
-    } while (0)
+extern int sceAppMgrLaunchAppByPath(const char *name, const char *cmd, int cmdlen, int dynamic, void *opt, void *id);
 
-static char lpath[0x400]; // self path
-static char larg[0x100];  // self args
-static uint32_t largl;    // self args len
+char lpath[0x400]; // self path
+char larg[0x100];  // self args
+uint32_t largl;    // self args len
 
-int ksceAppMgrLaunchAppByPath(const char *name, const char *cmd, int cmdlen, int dynamic, void *opt, void *id);
-
-static int launch_thread(SceSize args, void *argp)
+tai_hook_ref_t QafHookRef;
+SceUID         QafHookID = SCE_UID_INVALID_UID;
+SceInt32 SceQafMgrForDriver_7B14DC45_Patched()
 {
+    TAI_NEXT(SceQafMgrForDriver_7B14DC45_Patched, QafHookRef);
+    return 1;
+}
+
+tai_hook_ref_t SysrootHookRef;
+SceUID         SysrootHookID = SCE_UID_INVALID_UID;
+SceInt32 SceSysrootForDriver_421EFC96_Patched()
+{
+    TAI_NEXT(SceSysrootForDriver_421EFC96_Patched, SysrootHookRef);
+    return 0;
+}
+
+SceInt32 LaunchThread(SceSize args, void *argp)
+{
+    sceDebugPrintf("Launch thread\n");
     int opt[52 / 4];
     memset(opt, 0, sizeof(opt));
     opt[0] = sizeof(opt);
 
-    int ret = ksceAppMgrLaunchAppByPath(lpath, (largl) ? larg : 0, largl, 0, opt, NULL);
+    int ret = sceAppMgrLaunchAppByPath(lpath, (largl) ? larg : 0, largl, 0, opt, NULL);
 
-    ksceDebugPrintf("launch %s(%s) |=>| ret: 0x%X\n", lpath, larg, ret);
+    sceDebugPrintf("launch %s(%s) |=>| ret: 0x%X\n", lpath, larg, ret);
 
-    return ksceKernelExitDeleteThread(0);
+    return sceKernelExitDeleteThread(0);
 }
 
 /*
@@ -60,39 +55,37 @@ int SLKernelLaunchSelfWithArgs(uintptr_t path, uintptr_t cmd, uint32_t cmdlen)
 
     largl = (cmdlen < 0x100) ? cmdlen : 0x100;
     
-    ksceKernelStrncpyUserToKernel(lpath, path, 0x400);
+    sceKernelStrncpyFromUser(lpath, path, 0x400);
     if (cmd)
-        ksceKernelMemcpyUserToKernel(larg, cmd, largl);
+        sceKernelCopyFromUser(larg, cmd, largl);
 
-    SceUID thid = ksceKernelCreateThread("launch_thread", (SceKernelThreadEntry)launch_thread, 0x40, 0x1000, 0, 0, NULL);
+    SceUID thid = sceKernelCreateThread("SLKernelLaunchThread", LaunchThread, 0x40, 0x1000, 0, 0, NULL);
     if (thid < 0)
     {
+        sceDebugPrintf("[SLKernel Error] Could not create launch_thread 0x%X\n", thid);
         EXIT_SYSCALL(state);
         return thid;
     }
 
-    ksceKernelStartThread(thid, 0, NULL);
+    sceKernelStartThread(thid, 0, NULL);
+    EXIT_SYSCALL(state);
     return 0;
 }
 
-void _start() __attribute__((weak, alias("module_start")));
 int module_start(SceSize args, void *argp)
 {
-    if(ksceSblAimgrIsTool())
-    {
-        ksceDebugPrintf("DEVKIT Skipping SceSysmem patches!\n");
-        return SCE_KERNEL_START_SUCCESS;
-    }
-
-    // patch thread watchdog and allowSelfArgs QA
-    uintptr_t addr;
-    int sysmem_id = ksceKernelSearchModuleByName("SceSysmem");
-    module_get_offset(0x10005, sysmem_id, 0, 0, &addr); // either taiModuleUtils or tai_compat
-    DACR_OFF(*(uint32_t *)(addr + 0x1f0e6) = 0xe0032001; *(uint32_t *)(addr + 0x205fe) = 0xe00b2000;);
+    //Patches 'n' shit   
+    SysrootHookID = taiHookFunctionImportForKernel(KERNEL_PID, &SysrootHookRef, "SceAppMgr", 0x2ED7F97A, 0x421EFC96, SceSysrootForDriver_421EFC96_Patched);
+    sceDebugPrintf("SysrootHookID: 0x%X\n", SysrootHookID);
+    QafHookID = taiHookFunctionImportForKernel(KERNEL_PID, &QafHookRef, "SceAppMgr", 0x4E29D3B6, 0x7B14DC45, SceQafMgrForDriver_7B14DC45_Patched);
+    sceDebugPrintf("QafHookID: 0x%X\n", QafHookID);
+ 
     return SCE_KERNEL_START_SUCCESS;
 }
 
 int module_stop(SceSize args, void *argp)
 {
+    taiHookReleaseForKernel(SysrootHookID, SysrootHookRef);
+    taiHookReleaseForKernel(QafHookID, QafHookRef);
     return SCE_KERNEL_STOP_SUCCESS;
 }
