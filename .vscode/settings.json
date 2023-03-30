@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.xml": "xml",
+        "kernel.h": "c",
+        "common.h": "c",
+        "cpu.h": "c",
+        "string.h": "c",
+        "iosfwd": "c"
+    }
+}

@@ -18,6 +18,7 @@ add_link_options(
 add_library(${PROJECT_NAME} MODULE
     src/main.c
     ${PROJECT_NAME}.emd
+    ../common/SLKernel.h
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -27,6 +28,7 @@ target_link_libraries(${PROJECT_NAME}
     SceSysclibForDriver_stub
     SceSysmemForDriver_stub
     taihenForKernel_stub
+    SceIoFileMgrForDriver_stub
     SceAppMgrForDriver_stub
 )
 
@@ -36,6 +38,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   $ENV{SCE_PSP2_SDK_DIR}/target/include
   $ENV{SCE_PSP2_SDK_DIR}/target/include_common
   include
+  ../common
 )
 
 target_link_directories(${PROJECT_NAME} PRIVATE
@@ -44,9 +47,3 @@ target_link_directories(${PROJECT_NAME} PRIVATE
 
 
 VDSuiteSignElf(${PROJECT_NAME}.skprx ${PROJECT_NAME} KERNEL)
-
-VDSuiteCreateStubs(stubs ${PROJECT_NAME}.emd
-  LIBRARIES
-    SLKernel_stub
-    SLKernel_stub_weak
-)

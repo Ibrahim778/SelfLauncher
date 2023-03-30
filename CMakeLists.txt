@@ -51,6 +51,8 @@ add_executable(${PROJECT_NAME}
     src/pages/page.cpp
     src/pages/file_browser.cpp
 
+    common/SLKernel.h
+
     include/common.h
     include/print.h
     include/utils.h
@@ -68,6 +70,7 @@ target_link_directories(${PROJECT_NAME} PRIVATE
 
 target_include_directories(${PROJECT_NAME} PRIVATE
   ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/common
   ${VDSUITE_USER_INCLUDE_DIRECTORIES}
   ${VDSUITE_STANDARD_INCLUDE_DIRECTORIES}
   $ENV{SCE_PSP2_SDK_DIR}/target/include
@@ -87,7 +90,6 @@ target_link_libraries(${PROJECT_NAME}
     ScePafResource_stub
     ScePafMisc_stub
     LoaderCompanionKernel_stub_weak
-    SLKernel_stub_weak
     SceAppUtil_stub
     SceAppSettings_stub
     taihenUnsafe_stub

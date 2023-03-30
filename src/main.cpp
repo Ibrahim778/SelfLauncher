@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "pages/file_browser.h"
 #include "sl_plugin.h"
+#include "SLKernel.h"
 
 #define WIDE2(x) L##x
 #define WIDE(x) WIDE2(x)
@@ -16,12 +17,6 @@ extern "C" {
     const char			sceUserMainThreadName[] = "SL_MAIN";
     const int			sceUserMainThreadPriority = SCE_KERNEL_DEFAULT_PRIORITY_USER;
     const unsigned int	sceUserMainThreadStackSize = SCE_KERNEL_THREAD_STACK_SIZE_DEFAULT_USER_MAIN;
-
-    SceUID _vshKernelSearchModuleByName(const char *name, SceUInt64 *unk);
-    //From LoaderCompanionKernel
-    int launchAppFromFileExport(const char * path, const char * cmd, uint32_t cmdlen);
-    //From SLKernel
-    int SLKernelLaunchSelfWithArgs(const char * path, const char * cmd, uint32_t cmdlen);
 }
 
 using namespace paf;
@@ -40,12 +35,20 @@ SceInt32 ExitThread(SceSize args, ScePVoid pUserData)
     return sceKernelExitDeleteThread(0);
 }
 
-SceVoid LaunchSelfFromFile(const char *path, const char *argp = SCE_NULL, size_t args = 0)
+SceVoid LaunchSelfFromFile(SLKernelLaunchParam *lParam)
 {
-    SceUInt64 buff = 0;
-    if(_vshKernelSearchModuleByName("LoaderCompanionKernel", &buff) >= 0)
-        launchAppFromFileExport(path, argp, args);
-    else SLKernelLaunchSelfWithArgs(path, argp, args);
+    auto f = LocalFile::Open(SLKernelParamPath, SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0666, SCE_NULL);
+    f.get()->Write(lParam, sizeof(SLKernelLaunchParam));
+    
+    SceUID modid = SCE_UID_INVALID_UID;
+    modid = taiLoadStartKernelModule("ux0:app/SELF00001/module/SLKernel.skprx", 0, SCE_NULL, 0);
+    if(modid < 0)
+    {
+        print("[Error] Failed to load SLKernel: 0x%X\n", modid);
+        return;
+    }
+
+    taiStopUnloadKernelModule(modid, 0, SCE_NULL, 0, SCE_NULL, SCE_NULL);
 }
 
 SceVoid Launch()
@@ -53,19 +56,19 @@ SceVoid Launch()
     FileBrowser *workBrowser = (FileBrowser *)generic::Page::GetCurrentPage();
     
     Settings *settingInstance = Settings::GetInstance();
-	print("argsEnabled = %d\n", settingInstance->args_enabled);
-	
-	if (settingInstance->launchArgs_enabled != 1)
-	{
-		print("Args not enabled!\n");
-        print("%s\n", workBrowser->GetPath().c_str());
-        LaunchSelfFromFile(workBrowser->GetPath().c_str());
-	}
-	else
+	SLKernelLaunchParam lParam;
+
+    print("argsEnabled = %d\n", settingInstance->args_enabled);
+    
+    sce_paf_memset(&lParam, 0, sizeof(lParam));
+    sce_paf_strncpy(lParam.path, workBrowser->GetPath().c_str(), sizeof(lParam.path));
+
+	if (settingInstance->launchArgs_enabled == 1)
 	{
 		print("Args enabled!\n");
 		//Parse arguments here
-		char args[0x400];
+		char *args = lParam.args;
+
 		sce_paf_memset(args, 0, sizeof(args));
 
 		if (settingInstance->bg)
@@ -164,16 +167,16 @@ SceVoid Launch()
 		}
 
 		print("Args: %s\n", args);
-		int argumentLength = sce_paf_strlen(args) + 1;
+		lParam.argLength = sce_paf_strlen(args) + 1;
 		for (int i = 0; i < sizeof(args) && args[i] != 0; i++)
         {
 			if (args[i] == '~') args[i] = 0;
         }
 		
         print("%s\n", workBrowser->GetPath().c_str());
-        LaunchSelfFromFile(workBrowser->GetPath().c_str(), args, argumentLength);
 	}
 
+    LaunchSelfFromFile(&lParam);
     sceKernelStartThread(
         sceKernelCreateThread(
             "SL_exit_thread", 
@@ -233,16 +236,6 @@ SceVoid onPluginReady(Plugin *plugin)
 
 int main()
 {
-    SceUInt64 buff = 0;
-    if(_vshKernelSearchModuleByName("SLKernel", &buff) < 0) //SLKernel is not loaded
-    {
-        buff = 0;
-        if(_vshKernelSearchModuleByName("LoaderCompanionKernel", &buff) < 0) //Secondary option not available either
-        {
-            taiLoadStartKernelModule("ux0:app/SELF00001/module/SLKernel.skprx", 0, SCE_NULL, 0);
-            sceKernelExitProcess(0);
-        }
-    }
 #if defined(SCE_PAF_TOOL_PRX) && defined(_DEBUG) && !defined(__INTELLISENSE__)
     SCE_PAF_AUTO_TEST_SET_EXTRA_TTY(sceIoOpen("tty0:", SCE_O_WRONLY, 0));
 #endif
@@ -281,13 +274,5 @@ int main()
 
     fw->Run();
 
-    // SceUInt64 buff = 0;
-    // SceUID id = _vshKernelSearchModuleByName("LoaderCompanionKernel", &buff);
-    // sceClibPrintf("id 0x%X\n", id);
-    // if(id >= 0)
-    // {
-    //     launchAppFromFileExport("ux0:app/VITASHELL/eboot.bin", SCE_NULL, 0);
-    // }
-    
     return sceKernelExitProcess(0);
 }
