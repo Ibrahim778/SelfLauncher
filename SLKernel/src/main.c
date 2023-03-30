@@ -60,7 +60,7 @@ int module_start(SceSize args, void *argp)
 
     sceIoRead(fd, &gParam, sizeof(SLKernelLaunchParam));
     sceIoClose(fd);
-
+    sceIoRemove(SLKernelParamPath);
     return SCE_KERNEL_START_SUCCESS;
 }
 
